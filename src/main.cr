@@ -5,15 +5,7 @@ require "./encryptor.cr"
 require "./kdf.cr"
 require "./cli/action.cr"
 
-options = {
-  :action           => :"",
-  :input_file_path  => "",
-  :output_file_path => "",
-  :use_base64       => false,
-  :key_path         => "",
-  :salt_file_path   => "",
-  :passphrase       => "",
-}
+options = Hash(Symbol, Symbol | String | Bytes).new
 
 parser = OptionParser.new do |parser|
   parser.banner = <<-banner
@@ -43,7 +35,11 @@ parser = OptionParser.new do |parser|
   parser.on "encrypt", "Read FILE and write encrypted data to STDOUT" do
     options[:action] = :encrypt
     parser.on "-k", "--key KEY", "File contain key for encryption and decryption" do |key_path|
-      options[:key_path] = key_path
+      key = Bytes.new(Encryptor::KEY_SIZE)
+      File.open(key_path, "rb") do |file|
+        file.read(key)
+        options[:key] = key
+      end
     end
     parser.on "-i", "--input FILE", "File used for encryption" do |file_path|
       options[:input_file_path] = file_path
@@ -53,7 +49,11 @@ parser = OptionParser.new do |parser|
   parser.on "decrypt", "Read FILE and write decrypted data to STDOUT" do
     options[:action] = :decrypt
     parser.on "-k", "--key KEY", "File contain key for encryption and decryption" do |key_path|
-      options[:key_path] = key_path
+      key = Bytes.new(Encryptor::KEY_SIZE)
+      File.open(key_path, "rb") do |file|
+        file.read(key)
+        options[:key] = key
+      end
     end
     parser.on "-i", "--input FILE", "File used for decryption" do |file_path|
       options[:input_file_path] = file_path

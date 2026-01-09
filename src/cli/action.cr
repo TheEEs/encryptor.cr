@@ -29,14 +29,8 @@ def gen_key(options)
 end
 
 def encrypt(options)
-  key_path = options[:key_path].to_s
-  raise "Invalid key path" unless File.file? key_path
+  key = options[:key].as(Bytes)
   file_path = options[:input_file_path].to_s
-  raise "Invalid file path" unless File.file? file_path
-  key = Bytes.new(Encryptor::KEY_SIZE)
-  File.open(key_path, "rb") do |file|
-    file.read(key)
-  end
   input_file = File.open(file_path, "rb")
   e = Encryptor.new key
   e.encrypt_io(input_file, STDOUT)
@@ -46,14 +40,8 @@ def encrypt(options)
 end
 
 def decrypt(options)
-  key_path = options[:key_path].to_s
-  raise "Invalid key path" unless File.file? key_path
+  key = options[:key].as(Bytes)
   file_path = options[:input_file_path].to_s
-  raise "Invalid file path" unless File.file? file_path
-  key = Bytes.new(Encryptor::KEY_SIZE)
-  File.open(key_path, "rb") do |file|
-    file.read(key)
-  end
   input_file = File.open(file_path, "rb")
   d = Decryptor.new key
   d.decrypt_io(input_file, STDOUT)
