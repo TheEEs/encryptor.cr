@@ -3,3 +3,6 @@
 /bin/
 /.shards/
 *.dwarf
+/spec/key
+/spec/decrypted_img.JPG
+/spec/img.JPG.encrypted
