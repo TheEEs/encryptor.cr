@@ -1,0 +1,17 @@
+name: encryptor
+version: 0.1.0
+
+authors:
+  - Tran Dat <visualbasic2013@hotmail.com>
+
+targets:
+  encryptor:
+    main: src/main.cr
+
+dependencies:
+  term-prompt:
+    github: crystal-term/prompt
+    
+crystal: '>= 1.18.2'
+
+license: MIT
