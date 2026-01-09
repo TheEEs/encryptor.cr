@@ -1,6 +1,5 @@
 require "option_parser"
 require "colorize"
-require "term-prompt"
 require "./decryptor.cr"
 require "./encryptor.cr"
 require "./kdf.cr"
