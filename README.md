@@ -3,13 +3,13 @@
 Một chương trình dùng để mã hóa/giải mã tệp tin.
 
 ## Hướng dẫn cài đặt
-###1. Build từ mã nguồn
+### 1. Build từ mã nguồn
 Chương trình này được viết bằng Crystal phiên bản `1.18.2`. Mặc dù các phiên bản trước đó vẫn có thể sử dụng được. Hãy cài đặt Crystal trên máy tính Linux của bạn. Ở đây giả sử bạn đang sử dụng Alpine Linux.
-###2. Cài đặt các gói liên quan
+### 2. Cài đặt các gói liên quan
 ```bash
 doas apk add libsodium-static
 ```
-###3. Build
+### 3. Build
 Check out Repos này và di chuyển vào thư mục được clone về máy tính:
 ```bash
 git clone https://github.com/theees/encryptor.cr
@@ -24,7 +24,7 @@ Copy binary vào thư mục hệ thống
 ```bash
 doas cp -f ./bin/encryptor /usr/local/bin
 ```
-###4. Sử dụng
+### 4. Sử dụng
 ```text
 ██████ ▄▄  ▄▄  ▄▄▄▄ ▄▄▄▄  ▄▄ ▄▄ ▄▄▄▄ ▄▄▄▄▄▄ ▄▄▄  ▄▄▄▄     ▄▄▄▄ ▄▄▄▄  
 ██▄▄   ███▄██ ██▀▀▀ ██▄█▄ ▀███▀ ██▄█▀  ██  ██▀██ ██▄█▄   ██▀▀▀ ██▄█▄ 
@@ -36,11 +36,11 @@ doas cp -f ./bin/encryptor /usr/local/bin
     -h, --help                       Show this help
 
 ```
-####4.1. Mã hóa file
+#### 4.1. Mã hóa file
 ```bash
 encryptor encrypt -p [your_passphrase] -b [block_size_to_read] -i [file_need_to_be_encrypted] > [output_file]
 ```
-####4.1. Giải mã file
+#### 4.1. Giải mã file
 ```bash
 encryptor decryptor -p [your_passphrase] -i [file_need_to_be_decrypted] > [output_file]
 ```
