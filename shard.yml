@@ -10,9 +10,7 @@ targets:
 
 dependencies:
   progress:
-    github: askn/progress
-  term-prompt:
-    github: crystal-term/prompt
+    github: theees/progress
     
 crystal: '>= 1.18.2'
 

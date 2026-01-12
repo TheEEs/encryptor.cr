@@ -1,26 +1,6 @@
 version: 2.0
 shards:
   progress:
-    git: https://github.com/askn/progress.git
-    version: 0.2.0
-
-  term-color:
-    git: https://github.com/crystal-term/color.git
-    version: 0.4.1
-
-  term-cursor:
-    git: https://github.com/crystal-term/cursor.git
-    version: 0.3.1
-
-  term-prompt:
-    git: https://github.com/crystal-term/prompt.git
-    version: 0.3.3
-
-  term-reader:
-    git: https://github.com/crystal-term/reader.git
-    version: 0.3.2
-
-  term-screen:
-    git: https://github.com/crystal-term/screen.git
-    version: 0.3.1
+    git: https://github.com/theees/progress.git
+    version: 0.2.0+git.commit.d59543e80c892146ffd7bf32cb8ee7105757a35f
 
