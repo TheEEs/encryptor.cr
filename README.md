@@ -26,7 +26,7 @@ doas cp -f ./bin/encryptor /usr/local/bin
 ```
 ###4. Sử dụng
 ```text
-  ██████ ▄▄  ▄▄  ▄▄▄▄ ▄▄▄▄  ▄▄ ▄▄ ▄▄▄▄ ▄▄▄▄▄▄ ▄▄▄  ▄▄▄▄     ▄▄▄▄ ▄▄▄▄  
+██████ ▄▄  ▄▄  ▄▄▄▄ ▄▄▄▄  ▄▄ ▄▄ ▄▄▄▄ ▄▄▄▄▄▄ ▄▄▄  ▄▄▄▄     ▄▄▄▄ ▄▄▄▄  
 ██▄▄   ███▄██ ██▀▀▀ ██▄█▄ ▀███▀ ██▄█▀  ██  ██▀██ ██▄█▄   ██▀▀▀ ██▄█▄ 
 ██▄▄▄▄ ██ ▀██ ▀████ ██ ██   █   ██     ██  ▀███▀ ██ ██ ▄ ▀████ ██ ██
   File encryptor v1.0.0
@@ -45,4 +45,4 @@ encryptor encrypt -p [your_passphrase] -b [block_size_to_read] -i [file_need_to_
 encryptor decryptor -p [your_passphrase] -i [file_need_to_be_decrypted] > [output_file]
 ```
 
-> **Lưu ý**: Bạn phải nhớ passphrase được sử dụng để mã hóa file. Nếu quên, bạn sẽ **không bao giờ** giải mã lại được file đó nữa
+> **Lưu ý**: Bạn phải nhớ passphrase được sử dụng để mã hóa file. Nếu quên, bạn sẽ **không bao giờ** giải mã được file đó nữa.
