@@ -7,7 +7,7 @@ describe Decryptor do
     end
 
     it "should decrypt test.txt.encrypted file and see that decrypted_test.txt has the same content with test.txt" do
-      decryptor = Decryptor.new "passphare@123"
+      decryptor = Decryptor.new "passphare@123", file_size: File.size("./spec/img.JPG.encrypted").to_u64
       decryptor.decrypt_file("./spec/img.JPG.encrypted", "./spec/decrypted_img.JPG")
       decrypted_file_content = File.read("./spec/decrypted_img.JPG")
       original_file_content = File.read("./spec/img.JPG")

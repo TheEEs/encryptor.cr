@@ -5,7 +5,7 @@ def encrypt(options)
   passphrase = options[:passphrase].as(String)
   file_path = options[:input_file_path].to_s
   input_file = File.open(file_path, "rb")
-  e = Encryptor.new passphrase
+  e = Encryptor.new passphrase, file_size: File.size(file_path).to_u64
   e.encrypt_io(input_file, STDOUT)
   input_file.close
   STDOUT.close
@@ -22,7 +22,7 @@ def decrypt(options)
   passphrase = options[:passphrase].as(String)
   file_path = options[:input_file_path].to_s
   input_file = File.open(file_path, "rb")
-  d = Decryptor.new passphrase
+  d = Decryptor.new passphrase, file_size: File.size(file_path).to_u64
   d.decrypt_io(input_file, STDOUT)
   input_file.close
   STDOUT.close

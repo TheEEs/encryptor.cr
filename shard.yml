@@ -7,6 +7,12 @@ authors:
 targets:
   encryptor:
     main: src/main.cr
+
+dependencies:
+  progress:
+    github: askn/progress
+  term-prompt:
+    github: crystal-term/prompt
     
 crystal: '>= 1.18.2'
 

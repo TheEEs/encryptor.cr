@@ -1,4 +1,5 @@
 require "./lib/libsodium"
+require "progress"
 
 class Encryptor
   class EncryptionError < Exception; end
@@ -7,11 +8,15 @@ class Encryptor
   KEY_SIZE    = LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_KEYBYTES
   OVERHEAD    = LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_ABYTES
 
-  def initialize(passphare : String, @chunk_size : UInt64 = 1024)
+  def initialize(passphare : String, @chunk_size : UInt64 = 1024, file_size : UInt64? = nil)
     @state = LibSodium::State.new
     @header = Bytes.new(HEADER_SIZE)
     @salt = KDF.generate_salt
     @key = KDF.generate_key(passphare, @salt)
+    @bar = ProgressBar.new
+    if file_size.is_a? UInt64
+      @bar = ProgressBar.new file_size
+    end
     unless LibSodium.init_push(
              pointerof(@state),
              @header,
@@ -28,6 +33,7 @@ class Encryptor
   end
 
   def encrypt_file(path, output_path)
+    STDERR.puts "Encrypting #{path}".colorize.fore(:green)
     File.open(path, "rb") do |input_file|
       File.open(output_path, "wb") do |output_file|
         self.encrypt_io(input_file, output_file)
@@ -63,6 +69,7 @@ class Encryptor
       )
       raise EncryptionError.new("Encryption error!") unless res == 0
       output_io.write(output_buffer[0, actual_output_len])
+      @bar.tick(input_rb)
       break unless next_byte
     end
   end

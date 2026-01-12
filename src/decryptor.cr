@@ -1,4 +1,5 @@
 require "./lib/libsodium"
+require "progress"
 
 class Decryptor
   class DecryptionError < Exception; end
@@ -7,9 +8,13 @@ class Decryptor
   KEY_SIZE    = LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_KEYBYTES
   OVERHEAD    = LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_ABYTES
 
-  def initialize(@passphare : String)
+  def initialize(@passphare : String, file_size : UInt64? = nil)
     @state = LibSodium::State.new
     @header = Bytes.new(HEADER_SIZE)
+    @bar = ProgressBar.new
+    if file_size.is_a? UInt64
+      @bar = ProgressBar.new file_size
+    end
   end
 
   def decrypt_file(path, output_path)
@@ -58,6 +63,7 @@ class Decryptor
       )
       raise DecryptionError.new("Decryption error!") if res == -1
       output_io.write(output_buffer[0, plain_text_len])
+      @bar.tick input_rb
       if next_byte.nil? || tag == LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_TAG_FINAL
         break
       end
