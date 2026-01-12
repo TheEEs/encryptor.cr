@@ -1,15 +1,17 @@
 require "./lib/libsodium"
 
 class Encryptor
+  class EncryptionError < Exception; end
+
   HEADER_SIZE = LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_HEADERBYTES
   KEY_SIZE    = LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_KEYBYTES
   OVERHEAD    = LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_ABYTES
 
-  CHUNK_SIZE = 1024
-
-  def initialize(@key : Bytes)
+  def initialize(passphare : String, @chunk_size : UInt64 = 1024)
     @state = LibSodium::State.new
     @header = Bytes.new(HEADER_SIZE)
+    @salt = KDF.generate_salt
+    @key = KDF.generate_key(passphare, @salt)
     unless LibSodium.init_push(
              pointerof(@state),
              @header,
@@ -34,8 +36,12 @@ class Encryptor
   end
 
   def encrypt_io(input_io : IO, output_io : IO)
-    input_buffer = Bytes.new(CHUNK_SIZE)
-    output_buffer = Bytes.new(CHUNK_SIZE + OVERHEAD)
+    input_buffer = Bytes.new(@chunk_size)
+    output_buffer = Bytes.new(@chunk_size + OVERHEAD)
+    size_bytes = Bytes.new(sizeof(UInt64))
+    IO::ByteFormat::LittleEndian.encode(@chunk_size, size_bytes)
+    output_io.write(size_bytes)
+    output_io.write(@salt)
     output_io.write(@header)
     loop do
       input_rb = input_io.read(input_buffer).to_u64
@@ -55,7 +61,7 @@ class Encryptor
         nil, 0,
         tag
       )
-      raise "Encryption error!" unless res == 0
+      raise EncryptionError.new("Encryption error!") unless res == 0
       output_io.write(output_buffer[0, actual_output_len])
       break unless next_byte
     end

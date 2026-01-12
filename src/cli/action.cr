@@ -1,51 +1,36 @@
 require "colorize"
 require "base64"
 
-def gen_salt(options)
-  salt = KDF.generate_salt
-  STDOUT.write(salt)
-  exit 0
-end
-
-def base64_decode
-  data = STDIN.getb_to_end
-  Base64.decode(data, STDOUT)
-  exit 0
-end
-
-def base64_encode
-  data = STDIN.getb_to_end
-  Base64.strict_encode(data, STDOUT)
-  exit 0
-end
-
-def gen_key(options)
-  passphare = options[:passphrase].to_s
-  raise "You cannot provide an empty passphrase" if passphare.empty?
-  salt_bytes = STDIN.getb_to_end
-  raise "Invalid salt" unless salt_bytes.bytesize == LibSodium::CRYPTO_PWHASH_ARGON2ID_SALTBYTES
-  STDOUT.write KDF.generate_key(passphare, salt_bytes)
-  exit 0
-end
-
 def encrypt(options)
-  key = options[:key].as(Bytes)
+  passphrase = options[:passphrase].as(String)
   file_path = options[:input_file_path].to_s
   input_file = File.open(file_path, "rb")
-  e = Encryptor.new key
+  e = Encryptor.new passphrase
   e.encrypt_io(input_file, STDOUT)
   input_file.close
   STDOUT.close
   exit 0
+rescue ex : File::NotFoundError
+  STDERR.puts "ERROR: #{ex.file} is not a valid file!".colorize.fore(:red).bold
+  exit 1
+rescue Encryptor::EncryptionError
+  STDERR.puts "ERROR: could not encrypt file: #{file_path}".colorize.fore(:red).bold
+  exit 1
 end
 
 def decrypt(options)
-  key = options[:key].as(Bytes)
+  passphrase = options[:passphrase].as(String)
   file_path = options[:input_file_path].to_s
   input_file = File.open(file_path, "rb")
-  d = Decryptor.new key
+  d = Decryptor.new passphrase
   d.decrypt_io(input_file, STDOUT)
   input_file.close
   STDOUT.close
   exit 0
+rescue ex : File::NotFoundError
+  STDERR.puts "ERROR: #{ex.file} is not a valid file!".colorize.fore(:red).bold
+  exit 1
+rescue Decryptor::DecryptionError
+  STDERR.puts "ERROR: could not decrypt file: #{file_path}".colorize.fore(:red).bold
+  exit 1
 end

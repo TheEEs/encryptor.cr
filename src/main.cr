@@ -5,81 +5,103 @@ require "./encryptor.cr"
 require "./kdf.cr"
 require "./cli/action.cr"
 
-options = Hash(Symbol, Symbol | String | Bytes).new
+options = Hash(Symbol, Symbol | String | UInt64).new
 
 parser = OptionParser.new do |parser|
+  logo = <<-logo
+  ██████ ▄▄  ▄▄  ▄▄▄▄ ▄▄▄▄  ▄▄ ▄▄ ▄▄▄▄ ▄▄▄▄▄▄ ▄▄▄  ▄▄▄▄     ▄▄▄▄ ▄▄▄▄  
+  ██▄▄   ███▄██ ██▀▀▀ ██▄█▄ ▀███▀ ██▄█▀  ██  ██▀██ ██▄█▄   ██▀▀▀ ██▄█▄ 
+  ██▄▄▄▄ ██ ▀██ ▀████ ██ ██   █   ██     ██  ▀███▀ ██ ██ ▄ ▀████ ██ ██
+  logo
+  logo = logo.colorize.fore(:green)
   parser.banner = <<-banner
+    #{logo}
     #{"File encryptor v1.0.0".colorize.fore(:green)}
     Usage: encryptor [subcommand] [options]
   banner
 
-  parser.on "base64-encode", "Base64 encode data from STDIN and write to STDOUT" do
-    options[:action] = :base64_encode
-  end
-
-  parser.on "base64-decode", "Base64 decode data from STDIN and write to STDOUT" do
-    options[:action] = :base64_decode
-  end
-
-  parser.on "gen-salt", "Generate a salt for password-based key derivation" do
-    options[:action] = :gen_salt
-  end
-
-  parser.on "gen-key", "Read a salt from STDIN and generate a key with provided passphare" do
-    options[:action] = :gen_key
+  parser.on "encrypt", "Read FILE and write encrypted data to STDOUT" do
+    options[:action] = :encrypt
     parser.on "-p", "--passphrase PASSPHRASE", "Your passphrase" do |passphrase|
       options[:passphrase] = passphrase
     end
-  end
-
-  parser.on "encrypt", "Read FILE and write encrypted data to STDOUT" do
-    options[:action] = :encrypt
-    parser.on "-k", "--key KEY", "File contain key for encryption and decryption" do |key_path|
-      key = Bytes.new(Encryptor::KEY_SIZE)
-      File.open(key_path, "rb") do |file|
-        file.read(key)
-        options[:key] = key
-      end
-    end
-    parser.on "-i", "--input FILE", "File used for encryption" do |file_path|
+    parser.on "-i", "--input FILE", "File to encrypt" do |file_path|
       options[:input_file_path] = file_path
+    end
+    parser.on "-b", "--bs BLOCK_SIZE", "Block size (in bytes) to encrypt for each iteration" do |block_size|
+      options[:block_size] = block_size.to_u64
+    rescue ArgumentError
+      STDERR.puts "ERROR: you must supply a positive number to #{"-b".colorize.bold}".colorize.fore(:red)
+      exit 1
     end
   end
 
   parser.on "decrypt", "Read FILE and write decrypted data to STDOUT" do
     options[:action] = :decrypt
-    parser.on "-k", "--key KEY", "File contain key for encryption and decryption" do |key_path|
-      key = Bytes.new(Encryptor::KEY_SIZE)
-      File.open(key_path, "rb") do |file|
-        file.read(key)
-        options[:key] = key
-      end
+    parser.on "-p", "--passphrase PASSPHRASE", "Your passphrase" do |passphrase|
+      options[:passphrase] = passphrase
     end
-    parser.on "-i", "--input FILE", "File used for decryption" do |file_path|
+    parser.on "-i", "--input FILE", "File to decrypt" do |file_path|
       options[:input_file_path] = file_path
     end
   end
+
+  parser.invalid_option do |flag|
+    STDERR.puts "ERROR: #{flag} is not a valid option.".colorize.fore :red
+    exit(1)
+  end
+
+  parser.missing_option do |flag|
+    STDERR.puts "Error: you must supply a value to #{flag.colorize.bold}".colorize.fore :red
+    exit(1)
+  end
+
   parser.on "-h", "--help", "Show this help" do
-    puts parser
+    STDERR.puts parser
     exit
   end
 end
 
 parser.parse
-case options[:action]
-when :gen_salt
-  gen_salt(options)
-when :gen_key
-  gen_key(options)
-when :base64_encode
-  base64_encode
-when :base64_decode
-  base64_decode
-when :encrypt
-  encrypt(options)
-when :decrypt
-  decrypt(options)
-else
-  puts parser
-  exit 0
+
+begin
+  case options[:action]
+  when :encrypt
+    # check for requied flags
+    error = false
+    if options[:passphrase]?.nil?
+      STDERR.puts "Error: you must supply a passphare with #{"-p".colorize.bold} flag".colorize.fore :red
+      error = true
+    end
+    if options[:input_file_path]?.nil?
+      STDERR.puts "Error: you must supply an input file path with #{"-i".colorize.bold} flag".colorize.fore :red
+      error = true
+    end
+    exit(1) if error
+    encrypt(options)
+  when :decrypt
+    # check for requied flags
+    error = false
+    if options[:passphrase]?.nil?
+      STDERR.puts "Error: you must supply a passphare with #{"-p".colorize.bold} flag".colorize.fore :red
+      error = true
+    end
+    if options[:input_file_path]?.nil?
+      STDERR.puts "Error: you must supply an input file path with #{"-i".colorize.bold} flag".colorize.fore :red
+      error = true
+    end
+    exit(1) if error
+    decrypt(options)
+  else
+    STDERR.puts parser
+    exit 0
+  end
+rescue ex : KeyError
+  if ARGV.any?
+    STDERR.puts "Could not perform action #{ARGV.first.colorize.bold}".colorize.fore(:red)
+    exit 1
+  else
+    STDERR.puts parser
+    exit 0
+  end
 end

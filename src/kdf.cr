@@ -4,10 +4,11 @@ module KDF
   CRYPTO_PWHASH_OPSLIMIT_MODERATE =         3
   CRYPTO_PWHASH_MEMLIMIT_MODERATE = 268435456
   CRYPTO_PWHASH_ALG_DEFAULT       =         2
+  SALT_BYTES                      = LibSodium::CRYPTO_PWHASH_ARGON2ID_SALTBYTES
   extend self
 
-  def generate_salt
-    salt = Bytes.new(LibSodium::CRYPTO_PWHASH_ARGON2ID_SALTBYTES)
+  def generate_salt : Bytes
+    salt = Bytes.new(SALT_BYTES)
     Random::Secure.random_bytes salt
     salt
   end

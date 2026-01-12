@@ -1,11 +1,13 @@
 require "./lib/libsodium"
 
 class Decryptor
+  class DecryptionError < Exception; end
+
   HEADER_SIZE = LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_HEADERBYTES
   KEY_SIZE    = LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_KEYBYTES
   OVERHEAD    = LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_ABYTES
 
-  def initialize(@key : Bytes)
+  def initialize(@passphare : String)
     @state = LibSodium::State.new
     @header = Bytes.new(HEADER_SIZE)
   end
@@ -19,15 +21,25 @@ class Decryptor
   end
 
   def decrypt_io(input_io : IO, output_io : IO)
-    input_buffer = Bytes.new(Encryptor::CHUNK_SIZE + OVERHEAD)
-    output_buffer = Bytes.new(Encryptor::CHUNK_SIZE)
+    chunk_size_bytes = Bytes.new(sizeof(UInt64))
+    unless input_io.read(chunk_size_bytes) == sizeof(UInt64)
+      raise "Unable to load encrypted data chunk size"
+    end
+    chunk_size = IO::ByteFormat::LittleEndian.decode(UInt64, chunk_size_bytes)
+    input_buffer = Bytes.new(chunk_size + OVERHEAD)
+    output_buffer = Bytes.new(chunk_size)
+    salt = Bytes.new(KDF::SALT_BYTES)
+    unless input_io.read(salt) == KDF::SALT_BYTES
+      raise "Unable to load salt"
+    end
+    key = KDF.generate_key(@passphare, salt)
     unless input_io.read(@header) == HEADER_SIZE
       raise "Unable to read header!"
     end
     unless LibSodium.init_pull(
              pointerof(@state),
              @header,
-             @key
+             key
            ) == 0
       raise "Decryptor initialization fails!"
     end
@@ -44,7 +56,7 @@ class Decryptor
         input_rb,
         nil, 0
       )
-      raise "Decryption error!" if res == -1
+      raise DecryptionError.new("Decryption error!") if res == -1
       output_io.write(output_buffer[0, plain_text_len])
       if next_byte.nil? || tag == LibSodium::CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_TAG_FINAL
         break
