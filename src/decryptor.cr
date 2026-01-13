@@ -48,8 +48,14 @@ class Decryptor
            ) == 0
       raise "Decryptor initialization fails!"
     end
+    first_pull = true
     loop do
       input_rb = input_io.read(input_buffer)
+      if first_pull && input_rb != chunk_size
+        input_io.seek(-input_rb, IO::Seek::Current)
+        first_pull = false
+        next
+      end
       next_byte = input_io.read_byte # used to check eof
       input_io.seek(-1, IO::Seek::Current)
       res = LibSodium.pull(
