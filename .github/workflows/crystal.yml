@@ -29,7 +29,6 @@ jobs:
       run: shards build --release --production --static --no-debug
     - name: Publish
       uses: softprops/action-gh-release@v2
-      if: github.ref_type == 'tag'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
