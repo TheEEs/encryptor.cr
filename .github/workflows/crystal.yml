@@ -12,6 +12,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
 
     container:
       image: crystallang/crystal:1.18.2-alpine
@@ -29,11 +32,11 @@ jobs:
       run: shards build --release --production --static --no-debug
     - name: Publish
       uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         files: "./bin/encryptor"
         name: "encryptor-${{ github.ref_name }}-x86-64-static"
-        token: ${{ secrets.CUSTOM_ACTION_SECRET }}
 
         
