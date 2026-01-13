@@ -28,13 +28,13 @@ jobs:
     - name: Build
       run: shards build --release --production --static --no-debug
     - name: Publish
-      uses: actions/upload-release-asset@v1.0.1
+      uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./bin/encryptor
-        asset_name: encryptor-${{ github.event.release.tag_name }}-linux-x86_64-static
-        asset_content_type: binary/octet-stream
+        files: "./bin/encryptor"
+        name: "encryptor-${{ github.ref_name }}-x86-64-static"
         
+
         
