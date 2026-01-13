@@ -37,6 +37,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         files: "./bin/encryptor"
-        name: "{{ github.ref_name }}"
+        name: "${{ github.ref_name }}"
         generate_release_notes: true
         
