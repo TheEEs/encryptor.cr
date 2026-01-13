@@ -8,16 +8,18 @@ require "./cli/action.cr"
 options = Hash(Symbol, Symbol | String | UInt64).new
 
 parser = OptionParser.new do |parser|
-  logo = <<-logo
+  logo =
+    <<-logo
   ██████ ▄▄  ▄▄  ▄▄▄▄ ▄▄▄▄  ▄▄ ▄▄ ▄▄▄▄ ▄▄▄▄▄▄ ▄▄▄  ▄▄▄▄     ▄▄▄▄ ▄▄▄▄  
   ██▄▄   ███▄██ ██▀▀▀ ██▄█▄ ▀███▀ ██▄█▀  ██  ██▀██ ██▄█▄   ██▀▀▀ ██▄█▄ 
   ██▄▄▄▄ ██ ▀██ ▀████ ██ ██   █   ██     ██  ▀███▀ ██ ██ ▄ ▀████ ██ ██
   logo
   logo = logo.colorize.fore(:green)
-  parser.banner = <<-banner
-    #{logo}
-    #{"File encryptor v1.0.0".colorize.fore(:green)}
-    Usage: encryptor [subcommand] [options]
+  parser.banner =
+    <<-banner
+  #{logo}
+  #{"File encryptor v1.0.0".colorize.fore(:green)}
+  Usage: encryptor [subcommand] [options]
   banner
 
   parser.on "encrypt", "Read FILE and write encrypted data to STDOUT" do
@@ -77,6 +79,7 @@ begin
       STDERR.puts "Error: you must supply an input file path with #{"-i".colorize.bold} flag".colorize.fore :red
       error = true
     end
+    options[:block_size] = 1024_u64 unless options[:block_size]?
     exit(1) if error
     encrypt(options)
   when :decrypt

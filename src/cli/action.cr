@@ -5,9 +5,11 @@ def encrypt(options)
   passphrase = options[:passphrase].as(String)
   file_path = options[:input_file_path].to_s
   input_file = File.open(file_path, "rb")
-  e = Encryptor.new passphrase, file_size: File.size(file_path).to_u64
+  chunk_size = options[:block_size].as?(UInt64) || 1024_u64
+  e = Encryptor.new passphrase, chunk_size, file_size: File.size(file_path).to_u64
   e.encrypt_io(input_file, STDOUT)
   input_file.close
+  STDERR.puts ""
   STDOUT.close
   exit 0
 rescue ex : File::NotFoundError
@@ -25,6 +27,7 @@ def decrypt(options)
   d = Decryptor.new passphrase, file_size: File.size(file_path).to_u64
   d.decrypt_io(input_file, STDOUT)
   input_file.close
+  STDERR.puts ""
   STDOUT.close
   exit 0
 rescue ex : File::NotFoundError
