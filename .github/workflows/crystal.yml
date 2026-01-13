@@ -34,6 +34,6 @@ jobs:
       with:
         files: "./bin/encryptor"
         name: "encryptor-${{ github.ref_name }}-x86-64-static"
-        token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+        token: ${{ secrets.CUSTOM_ACTION_SECRET }}
 
         
