@@ -3,6 +3,8 @@ name: Crystal CI
 on:
   push:
     branches: [ "master" ]
+    tags:
+      - 
   pull_request:
     branches: [ "master" ]
 
@@ -18,8 +20,21 @@ jobs:
     - name: Download source
       uses: actions/checkout@v4
     - name: Install build dependencies
-      run: apk add libsodium-static
+      run: apk add --update --upgrade --no-cache --force-overwrite libsodium-static
     - name: Install dependencies
       run: shards install
     - name: Run tests
       run: crystal spec
+    - name: Build
+      run: shards build --release --production --static --no-debug
+    - name: Publish
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./bin/encryptor
+        asset_name: encryptor-${{ github.event.release.tag_name }}-linux-x86_64-static
+        asset_content_type: binary/octet-stream
+        
+        
