@@ -1,3 +1,5 @@
+# Main CLI entry point for the encryptor application
+# Parses command-line arguments and routes to encrypt or decrypt operations
 require "option_parser"
 require "colorize"
 require "./decryptor.cr"
@@ -5,8 +7,10 @@ require "./encryptor.cr"
 require "./kdf.cr"
 require "./cli/action.cr"
 
+# Hash to store parsed command-line options
 options = Hash(Symbol, Symbol | String | UInt64).new
 
+# Setup command-line parser with subcommands and options
 parser = OptionParser.new do |parser|
   logo =
     <<-logo
@@ -22,6 +26,7 @@ parser = OptionParser.new do |parser|
   Usage: encryptor [subcommand] [options]
   banner
 
+  # Encrypt subcommand: encrypts a file and outputs encrypted data to STDOUT
   parser.on "encrypt", "Read FILE and write encrypted data to STDOUT" do
     options[:action] = :encrypt
     parser.on "-p", "--passphrase PASSPHRASE", "Your passphrase" do |passphrase|
@@ -38,6 +43,7 @@ parser = OptionParser.new do |parser|
     end
   end
 
+  # Decrypt subcommand: decrypts a file and outputs plaintext to STDOUT
   parser.on "decrypt", "Read FILE and write decrypted data to STDOUT" do
     options[:action] = :decrypt
     parser.on "-p", "--passphrase PASSPHRASE", "Your passphrase" do |passphrase|
@@ -48,6 +54,7 @@ parser = OptionParser.new do |parser|
     end
   end
 
+  # Error handlers for invalid options and missing values
   parser.invalid_option do |flag|
     STDERR.puts "ERROR: #{flag} is not a valid option.".colorize.fore :red
     exit(1)
@@ -58,18 +65,21 @@ parser = OptionParser.new do |parser|
     exit(1)
   end
 
+  # Help option
   parser.on "-h", "--help", "Show this help" do
     STDERR.puts parser
     exit
   end
 end
 
+# Parse command-line arguments
 parser.parse
 
+# Route to appropriate action and validate required options
 begin
   case options[:action]
   when :encrypt
-    # check for requied flags
+    # Validate required flags for encryption
     error = false
     if options[:passphrase]?.nil?
       STDERR.puts "Error: you must supply a passphare with #{"-p".colorize.bold} flag".colorize.fore :red
@@ -79,11 +89,12 @@ begin
       STDERR.puts "Error: you must supply an input file path with #{"-i".colorize.bold} flag".colorize.fore :red
       error = true
     end
+    # Set default block size if not provided
     options[:block_size] = 1024_u64 unless options[:block_size]?
     exit(1) if error
     encrypt(options)
   when :decrypt
-    # check for requied flags
+    # Validate required flags for decryption
     error = false
     if options[:passphrase]?.nil?
       STDERR.puts "Error: you must supply a passphare with #{"-p".colorize.bold} flag".colorize.fore :red
@@ -96,10 +107,12 @@ begin
     exit(1) if error
     decrypt(options)
   else
+    # Display help if no valid subcommand provided
     STDERR.puts parser
     exit 0
   end
 rescue ex : KeyError
+  # Handle missing subcommand
   if ARGV.any?
     STDERR.puts "Could not perform action #{ARGV.first.colorize.bold}".colorize.fore(:red)
     exit 1
