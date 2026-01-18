@@ -14,11 +14,11 @@ A program for encrypting and decrypting files.
 
 **Vietnamese:**
 
-> Bạn có thể tải về pre-build binary mới nhất tại [đây](github.com/theees/encryptor.cr/releases/latest), hoặc:
+> Bạn có thể tải về pre-build binary mới nhất tại [đây](https://github.com/theees/encryptor.cr/releases/latest), hoặc:
 
 **English:**
 
-> You can download the latest pre-built binary [here](github.com/theees/encryptor.cr/releases/latest), or:
+> You can download the latest pre-built binary [here](https://github.com/theees/encryptor.cr/releases/latest), or:
 
 ### 1. Build từ mã nguồn / Build from Source
 
